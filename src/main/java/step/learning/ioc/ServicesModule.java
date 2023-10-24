@@ -3,6 +3,8 @@ package step.learning.ioc;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
+import step.learning.services.formparse.FormParseService;
+import step.learning.services.formparse.MixedFormParseService;
 import step.learning.services.hash.HashService;
 import step.learning.services.hash.Md5HashService;
 import step.learning.services.hash.ShaHashService;
@@ -19,6 +21,8 @@ public class ServicesModule extends AbstractModule {
         bind(HashService.class)
                 .annotatedWith(Names.named("DSA-Hash"))
                 .to(ShaHashService.class);
+
+        bind( FormParseService.class ).to( MixedFormParseService.class );
     }
     private RandomService randomService;
     @Provides

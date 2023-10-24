@@ -3,6 +3,8 @@ package step.learning.servlets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import step.learning.dto.models.RegFormModel;
+import step.learning.services.formparse.FormParseResult;
+import step.learning.services.formparse.FormParseService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,6 +16,13 @@ import java.text.ParseException;
 
 @Singleton
 public class SignupServlet extends HttpServlet {
+    private final FormParseService formParseService;
+
+    @Inject
+    public SignupServlet(FormParseService formParseService) {
+        this.formParseService = formParseService;
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // перевіряємо чи є повідомлення у сесії
@@ -44,10 +53,11 @@ public class SignupServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        FormParseResult formParseResult = formParseService.parse(req);
         RegFormModel model;
 
         try {
-            model = new RegFormModel(req);
+            model = new RegFormModel(formParseResult);
         } catch (ParseException e) {
             // throw new RuntimeException(e);
             model = null;
@@ -55,7 +65,9 @@ public class SignupServlet extends HttpServlet {
 
         HttpSession session = req.getSession();
 
-        // Валідація моделі (даних)
+        // Перевірка наявності файлу (та його збереження)
+
+
         // Зберігаємо необхідні дані у сесії та повертаємо на ГЕТ шляхом відповіді-редиректу
         if(model == null) {
             // стан помилки розбору форм
@@ -72,7 +84,7 @@ public class SignupServlet extends HttpServlet {
             session.setAttribute("reg-status", 2);
 
         }
-
+        //
         resp.sendRedirect(req.getRequestURI());
     }
 }
