@@ -1,3 +1,4 @@
+<%@ page import="java.util.Date" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%
     String pageBody = (String) request.getAttribute("page-body");
@@ -8,11 +9,10 @@
 <head>
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link rel="stylesheet" href="styles.css">
     <!--Import Google Icon Font-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <!--Site CSS-->
-    <link rel="stylesheet" href="<%=context%>/css/site.css">
+    <link rel="stylesheet" href="<%=context%>/css/site.css?time=<%= new Date().getTime()%>">
     <title>Java web</title>
 </head>
 <body>
@@ -30,6 +30,7 @@
             <li><a href="<%= context %>/jsp">Jsp</a></li>
             <li <%= "filters.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/filters">Filters</a></li>
             <li <%= "ioc.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/ioc">IoC</a></li>
+            <li <%= "db.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/db">DB</a></li>
         </ul>
     </div>
 </nav>
@@ -76,7 +77,7 @@
 <!-- Compiled and minified JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <!-- Site JS -->
-<script src="<%=context%>/js/site.js"></script>
+<script src="<%=context%>/js/site.js?time=<%= new Date().getTime()%>"></script>
 </body>
 </html>
 

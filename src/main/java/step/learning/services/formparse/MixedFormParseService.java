@@ -40,9 +40,10 @@ public class MixedFormParseService implements FormParseService {
         fileUpload.setSizeMax(MAX_FORM_SIZE);
     }
     @Override
-    public FormParseResult parse(HttpServletRequest request) {
+    public FormParseResult parse(final HttpServletRequest request) {
         final Map<String, String> fields = new HashMap<>();
         final Map<String, FileItem> files = new HashMap<>();
+        final HttpServletRequest req = request;
         // визначаємо тип запиту (multipart|urlencoded)
         boolean isMultipart = request.getHeader("Content-Type").startsWith("multipart/form-data");
         // кодування закладене у CharsetFilter
@@ -77,6 +78,7 @@ public class MixedFormParseService implements FormParseService {
         return new FormParseResult() {
             @Override public Map<String, String> getFields() { return fields; }
             @Override public Map<String, FileItem> getFiles() { return files; }
+            @Override public HttpServletRequest getRequest() { return req; }
         };
     }
 }

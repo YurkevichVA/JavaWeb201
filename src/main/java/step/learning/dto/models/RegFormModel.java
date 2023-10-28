@@ -44,11 +44,7 @@ public class RegFormModel {
         this.setEmail(fields.get("reg-email"));
         this.setIsAgree(fields.get("reg-rules"));
         this.setBirthdate(fields.get("reg-birthdate"));
-        Map<String, FileItem> files = result.getFiles();
-        if(files.containsKey("reg-avatar")) {
-            // є попередній файл, обробляємо його
-            this.setAvatar(files.get("reg-avatar"));
-        }
+        this.setAvatar(result);
     }
 
     public Map<String, String > getErrorMessages() {
@@ -101,7 +97,17 @@ public class RegFormModel {
     }
 
     // region accessors
-    private void setAvatar(FileItem item) throws ParseException {
+    private void setAvatar(FormParseResult result) throws ParseException {
+        Map<String, FileItem> files = result.getFiles();
+        if(! files.containsKey("reg-avatar")) {
+            this.avatar = null;
+            return;
+        }
+        FileItem item = files.get("reg-avatar");
+        // директорія завантаження файлів (./ - це директорія сервера (Tomcat))
+        String targetDir = result.getRequest()
+                            .getServletContext() // контекст - "оточення" сервелету, з якого дізнаємось файлові шляхи
+                            .getRealPath("./upload/avatar/");
         String submittedFilename = item.getName();
         // Визначити тип файлу (розширення) та перевірити на перелік дозволених
         String ext = submittedFilename.substring(submittedFilename.lastIndexOf('.'));
@@ -117,7 +123,7 @@ public class RegFormModel {
         File savedFile ;
         do {
             savedFilename = UUID.randomUUID().toString().substring(0,8) + ext;
-            savedFile = new File("C:\\Java\\" + savedFilename);
+            savedFile = new File(targetDir, savedFilename);
         } while (savedFile.exists());
         // Завантажуємо файл
         try {
