@@ -43,17 +43,38 @@ function readButtonClick() {
         headers: {
             'Content-Type': 'application/json' // Set the content type to JSON
         }
-    }).then(r => r.json()).then(data => {
-        console.log(data);
+    }).then(r => r.json()).then(showCalls);
+}
 
-        const table = document.getElementById("callMeTable");
-        table.querySelector('tbody').innerHTML = '';
-                data.forEach(call => {
-            const row = table.querySelector('tbody').insertRow();
-            row.insertCell(0).textContent = call.id;
-            row.insertCell(1).textContent = call.name;
-            row.insertCell(2).textContent = call.phone;
-        });
-        table.style.display = 'table';
+function showCalls(j) {
+    console.log(j);
+
+    const table = document.getElementById("callMeTable");
+    table.querySelector('tbody').innerHTML = '';
+    j.forEach(call => {
+        const row = table.querySelector('tbody').insertRow();
+        row.insertCell(0).textContent = call.id;
+        row.insertCell(1).textContent = call.name;
+        row.insertCell(2).textContent = call.phone;
+        row.insertCell(3).textContent = call.moment;
+        row.insertCell(4).innerHTML = ( call.callMoment == null ) ? `<button data-id="${call.id}" onclick="callClick(event)">call</button>` : call.callMoment;
     });
+    table.style.display = 'table';
+}
+function callClick(e) {
+    // alert('CALLING id=' + e.target.getAttribute("data-id"));
+    const callId = e.target.getAttribute("data-id");
+    if(confirm(`Make call for order #${callId}` )){
+        fetch(window.location.href + "?call-id=" + callId, {
+            method: 'LINK',
+        }).then(r => r.json()).then(j => {
+            if(typeof j.callMoment == 'undefined')
+            {
+
+            }
+            else {
+                e.target.parentNode.innerHTML = j.callMoment;
+            }
+        });
+    }
 }
