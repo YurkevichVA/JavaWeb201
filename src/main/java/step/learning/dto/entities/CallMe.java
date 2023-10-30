@@ -11,6 +11,7 @@ public class CallMe {
     private String phone;
     private Date moment;
     private Date callMoment;
+    private Date deleteMoment;
 
     public CallMe(ResultSet resultSet) throws SQLException {
         this.setId( resultSet.getString("id") );
@@ -19,6 +20,8 @@ public class CallMe {
         this.setMoment( new Date( resultSet.getTimestamp("moment").getTime() ) );
         Timestamp callMoment = resultSet.getTimestamp("call_moment");
         this.setCallMoment( callMoment == null ? null : new Date( callMoment.getTime() ) );
+        Timestamp deleteMoment = resultSet.getTimestamp("delete_moment");
+        this.setDeleteMoment( deleteMoment == null ? null : new Date( deleteMoment.getTime() ) );
     }
 
     public String getId() {
@@ -59,5 +62,13 @@ public class CallMe {
 
     public void setCallMoment(Date callMoment) {
         this.callMoment = callMoment;
+    }
+
+    public Date getDeleteMoment() {
+        return deleteMoment;
+    }
+
+    public void setDeleteMoment(Date deleteMoment) {
+        this.deleteMoment = deleteMoment;
     }
 }

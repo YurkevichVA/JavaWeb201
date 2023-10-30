@@ -27,8 +27,15 @@ public class CallMeDao {
     }
 
     public List<CallMe> getAll() {
+        return getAll(false);
+    }
+
+    public List<CallMe> getAll(boolean includeDeleted) {
         List<CallMe> ret = new ArrayList<>();
         String sql = "SELECT C.* FROM " + dbPrefix + "call_me C";
+        if(! includeDeleted) {
+            sql += " WHERE C.delete_moment IS NULL";
+        }
         try ( Statement statement = dbProvider.getConnection().createStatement() ;
               ResultSet resultSet = statement.executeQuery( sql ) ) {
             while( resultSet.next() ) {
@@ -44,6 +51,11 @@ public class CallMeDao {
         if(item == null || item.getId() == null){
             return false;
         }
+        /*
+        Оновлення дати-часу у БД часто супроводжується оновленням даних у самому об'єкті (item). У той же час, встановлення
+         моменту має бути централізованим, рекомендовано - з боку СУБД. Це вирішуєтьсяя двома запитами - один фіксує дату,
+         інший її використовує.
+         */
         String sql = "SELECT CURRENT_TIMESTAMP";
         Timestamp moment;
         try(Statement statement = dbProvider.getConnection().createStatement()){
@@ -69,12 +81,20 @@ public class CallMeDao {
         return false;
     }
 
-    public CallMe getById(String id){
+    public CallMe getById(String id) {
+        return getById(id, false);
+    }
+
+    public CallMe getById(String id, boolean includeDeleted){
         if(id == null) {
             return null;
         }
 
         String sql = "SELECT C.* FROM " + dbPrefix + "call_me C WHERE C.id = ?";
+
+        if( ! includeDeleted ) {
+            sql += " AND C.delete_moment IS NULL" ;
+        }
 
         try(PreparedStatement prep = dbProvider.getConnection().prepareStatement(sql)) {
             prep.setString(1,id);
@@ -88,6 +108,44 @@ public class CallMeDao {
         }
 
         return null;
+    }
+
+    public boolean delete( CallMe item ) {
+        return delete(item, true);
+    }
+
+    public boolean delete( CallMe item, boolean softDelete ) {
+        if(item == null || item.getId() == null){
+            return false;
+        }
+        String sql = softDelete
+                ? "UPDATE " + dbPrefix + "call_me SET delete_moment = CURRENT_TIMESTAMP WHERE id = ?"
+                : "DELETE FROM " + dbPrefix + "call_me WHERE id = ?" ;
+
+        try ( PreparedStatement prep = dbProvider.getConnection().prepareStatement( sql ) ) {
+            prep.setString(1, item.getId());
+            prep.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            logger.log(Level.WARNING,e.getMessage() + "----" + sql);
+        }
+        return false;
+    }
+
+    public boolean restore(CallMe item){
+        if(item == null || item.getId() == null){
+            return false;
+        }
+        String sql = "UPDATE " + dbPrefix + "call_me SET delete_moment = NULL WHERE id = ?";
+        try (PreparedStatement prep = dbProvider.getConnection().prepareStatement(sql)){
+            prep.setString(1, item.getId());
+            prep.executeUpdate();
+            return true;
+        }
+        catch (SQLException ex){
+            logger.log(Level.WARNING,ex.getMessage() + "----" + sql);
+        }
+        return false;
     }
 }
 /*

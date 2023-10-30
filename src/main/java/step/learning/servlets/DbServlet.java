@@ -45,9 +45,9 @@ public class DbServlet extends HttpServlet {
             case "PATCH": doPatch(req, resp); break;
             case "COPY": doCopy(req, resp); break;
             case "LINK": doLink(req, resp); break;
-            // case "PURGE": break;
+            case "PURGE": doPurge(req, resp); break;
+            case "MOVE": doMove(req, resp); break;
             // case "UNLINK": break;
-            // case "MOVE": break;
             default: super.service(req, resp);
         }
 
@@ -63,8 +63,7 @@ public class DbServlet extends HttpServlet {
         String jsonData = gson.toJson(calls);
         resp.getWriter().print(jsonData);
     }
-    protected void doLink(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
-    {
+    protected void doLink(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
         String callId = req.getParameter("call-id");
         if( callId == null)
@@ -96,11 +95,74 @@ public class DbServlet extends HttpServlet {
             return;
         }
     }
-
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().print("Patch works");
+        resp.setContentType("application/json");
+        String callId = req.getParameter("call-id");
+        if(callId == null) {
+            resp.setStatus(400);
+            resp.getWriter().print("\"Missing required parameter 'call-id'\"");
+            return;
+        }
+        CallMe item = callMeDao.getById(callId);
+        if(item == null ){
+            resp.setStatus(404);
+            resp.getWriter().print("\"Item not found for given parameter 'call-id'\"");
+            return;
+        }
+        if(item.getCallMoment() != null) {
+            resp.setStatus(422);
+            resp.getWriter().print("\"Unprocessable Content: Item was processed early\"");
+            return;
+        }
+        if(callMeDao.updateCallMoment(item)){
+            resp.setStatus(202);
+            resp.getWriter().print(new Gson().toJson(item));
+            return;
+        }
+        else
+        {
+            resp.setStatus(500);
+            resp.getWriter().print("\"Server error. Details on server's logs \"");
+            return;
+        }
     }
-
+    protected void doPurge(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        List<CallMe> calls = callMeDao.getAll(true);
+        Gson gson = new GsonBuilder().create();
+        resp.getWriter().print(gson.toJson(calls));
+    }
+    protected void doMove(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+        resp.setContentType("application/json");
+        String callId = req.getParameter("call-id");
+        if( callId == null)
+        {
+            resp.setStatus(400);
+            resp.getWriter().print("\"Missing required parameter 'call-id' \"");
+            return;
+        }
+        CallMe item = callMeDao.getById(callId,true);
+        if(item == null)
+        {
+            resp.setStatus(404);
+            resp.getWriter().print("\"Item not found for given parameter 'call-id' \"");
+            return;
+        }
+        if(item.getDeleteMoment() == null){
+            resp.setStatus(422);
+            resp.getWriter().print("\"Unprocessable Content: Item was processed early \"");
+            return;
+        }
+        if(callMeDao.restore(item)){
+            resp.setStatus(202);
+            resp.getWriter().print("\"Operation completed\"");
+        }
+        else
+        {
+            resp.setStatus(500);
+            resp.getWriter().print("\"Server error. Details on server's logs \"");
+            return;
+        }
+    }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String connectionStatus;
@@ -123,10 +185,12 @@ public class DbServlet extends HttpServlet {
         String status;
         String message;
         String sql = "CREATE TABLE " + dbPrefix + "call_me (" +
-                "id     BIGINT UNSIGNED PRIMARY KEY DEFAULT (UUID_SHORT())," +
-                "name   VARCHAR(64)     NULL," +
-                "phone  CHAR(13)        NOT NULL COMMENT '+38 098 765 43 21'," +
-                "moment DATETIME        DEFAULT CURRENT_TIMESTAMP" +
+                "`id`     BIGINT UNSIGNED PRIMARY KEY DEFAULT (UUID_SHORT())," +
+                "`name`   VARCHAR(64)     NULL," +
+                "`phone`  CHAR(13)        NOT NULL COMMENT '+38 098 765 43 21'," +
+                "`moment` DATETIME        DEFAULT CURRENT_TIMESTAMP," +
+                "`call_moment` DATETIME NULL," +
+                "`delete_moment` DATETIME NULL " +
                 ") ENGINE = InnoDB DEFAULT CHARSET = UTF8;";
         try (Statement statement = dbProvider.getConnection().createStatement()) {
             statement.executeUpdate(sql);
@@ -261,5 +325,39 @@ public class DbServlet extends HttpServlet {
 
         resp.getWriter().print(result.toString());
 
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+        String callId = req.getParameter("call-id");
+        if(callId == null) {
+            resp.setStatus(400);
+            resp.getWriter().print("\"Missing required parameter 'call-id'\"");
+            return;
+        }
+        CallMe item = callMeDao.getById(callId);
+        if(item == null ){
+            resp.setStatus(404);
+            resp.getWriter().print("\"Item not found for given parameter 'call-id'\"");
+            return;
+        }
+        if(item.getDeleteMoment() != null) {
+            resp.setStatus(422);
+            resp.getWriter().print("\"Unprocessable Content: Item was processed early\"");
+            return;
+        }
+
+        if(callMeDao.delete(item)){
+            resp.setStatus(202);
+            resp.getWriter().print("\"Operation completed\"");
+            return;
+        }
+        else
+        {
+            resp.setStatus(500);
+            resp.getWriter().print("\"Server error. Details on server's logs \"");
+            return;
+        }
     }
 }

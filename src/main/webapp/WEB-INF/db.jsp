@@ -42,6 +42,7 @@
         <i class="material-icons right">view_list</i>
         Переглянути замовлення
     </button>
+    <button id="db-read-deleted-button" class="waves-effect waves-light btn green accent-4"><i class="material-icons right">view_list</i>Переглянути включно з видаленими</button>
     <table id="callMeTable" style="display: none">
         <thead>
         <tr>
@@ -50,6 +51,7 @@
             <th>Phone</th>
             <th>Moment</th>
             <th>Call Moment</th>
+            <th>Delete/Restore</th>
         </tr>
         </thead>
         <tbody>
