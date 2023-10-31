@@ -31,6 +31,7 @@
             <li <%= "filters.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/filters">Filters</a></li>
             <li <%= "ioc.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/ioc">IoC</a></li>
             <li <%= "db.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/db">DB</a></li>
+            <li <%= "db.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/spa">SPA</a></li>
         </ul>
     </div>
 </nav>
@@ -66,18 +67,32 @@
 <div id="auth-modal" class="modal">
     <div class="modal-content">
         <h4>Автентифікація на сайті</h4>
-        <p>A bunch of text</p>
+    <div class="row">
+        <div class="input-field col s6">
+            <i class="material-icons prefix">person</i>
+            <input id="auth-login" type="text" class="validate">
+            <label for="auth-login">Логін</label>
+        </div>
+
+        <div class="input-field col s6">
+            <i class="material-icons prefix">lock</i>
+            <input id="auth-password" type="password" class="validate">
+            <label for="auth-password">Пароль</label>
+        </div>
+    </div>
     </div>
     <div class="modal-footer">
+        <b id="auth-message"></b>
         <a href="<%=context%>/signup" class="modal-close waves-effect waves-green btn-flat green accent-4">Реєстрація</a>
-        <a href="#!" class="waves-effect waves-green btn-flat green accent-3" >Вхід</a>
+        <a href="#!" id="auth-sign-in" class="waves-effect waves-green btn-flat green accent-3" >Вхід</a>
     </div>
 </div>
 
 <!-- Compiled and minified JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <!-- Site JS -->
-<script src="<%=context%>/js/site.js?time=<%= new Date().getTime()%>"></script>
+<script src="<%=context%>/js/site.js"></script>
+<script src="<%=context%>/js/spa.js?time=<%= new Date().getTime()%>"></script>
 </body>
 </html>
 
