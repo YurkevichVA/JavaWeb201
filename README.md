@@ -1,6 +1,10 @@
 # JavaWeb201
 --------------------------
 
+![image](https://github.com/YurkevichVA/JavaWeb201/assets/67063105/c7cf7a1b-2041-4b0d-b752-a5f29520c02c)
+
+--------------------------
+
 ![image](https://github.com/YurkevichVA/JavaWeb201/assets/67063105/a659c81c-f65d-4bf2-b9f2-d45956514884)
 
 --------------------------
