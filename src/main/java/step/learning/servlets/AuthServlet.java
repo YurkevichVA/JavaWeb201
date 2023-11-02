@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import step.learning.dao.AuthTokenDao;
 import step.learning.dao.UserDao;
+import step.learning.dto.entities.AuthToken;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -45,6 +46,12 @@ public class AuthServlet extends HttpServlet {
             sendResponse(resp, 400, "Missing required parametrs: login and/or password");
             return;
         }
+        AuthToken authToken = authTokenDao.getTokenByCredentials(login, password);
+        if( authToken == null ) {
+            sendResponse(resp, 401, "Auth rejected for given login and/or password");
+            return;
+        }
+        resp.getWriter().print(gson.toJson(authToken));
     }
 
     private void sendResponse(HttpServletResponse resp, int status, Object body) throws IOException {

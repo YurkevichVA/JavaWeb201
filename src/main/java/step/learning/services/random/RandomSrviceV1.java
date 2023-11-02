@@ -11,7 +11,7 @@ public class RandomSrviceV1 implements RandomService {
     @Override
     public void seed(String iv) {
         this.iv = iv;
-        random.setSeed( iv == null ? 0 : iv.length() ) ;
+        random.setSeed( iv == null ? 0 : Long.parseLong( iv ) ) ;
     }
     @Override
     public String randomHex(int charLength) {

@@ -99,8 +99,8 @@ public class RegFormModel {
     // region accessors
     private void setAvatar(FormParseResult result) throws ParseException {
         Map<String, FileItem> files = result.getFiles();
-        if(! files.containsKey("reg-avatar")) {
-            this.avatar = null;
+        if(! files.containsKey("reg-avatar") || files.get("reg-avatar").getSize() == 0) {
+            this.avatar = "no-photo.png";
             return;
         }
         FileItem item = files.get("reg-avatar");

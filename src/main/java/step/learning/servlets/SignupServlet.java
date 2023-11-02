@@ -81,8 +81,9 @@ public class SignupServlet extends HttpServlet {
         }
         else {
             // стан успішної обробки моделі - передаємо лише повідомлення
-            userDao.addFromForm(model);
-            session.setAttribute("reg-status", 2);
+            if(userDao.addFromForm(model)) {
+                session.setAttribute("reg-status", 2);
+            }
 
         }
         //
