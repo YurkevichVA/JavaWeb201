@@ -16,15 +16,52 @@ document.addEventListener("DOMContentLoaded", () => {
     // Token verification
     const spaTokenStatus = document.getElementById("spa-token-status");
     if(spaTokenStatus) {
-        const jti = window.localStorage.getItem("jti");
-        const exp = window.localStorage.getItem("exp");
-        spaTokenStatus.innerText = (!!jti) ? 'Встановлено ' + jti + ", дійсний до " + exp: 'Не встановлено';
-        if(jti) {
-            fetch('tpl/spa-auth.html')
+        const token = window.localStorage.getItem('token');
+        if(token) {
+            const tokenObj = JSON.parse(atob(token));
+            spaTokenStatus.innerText = "Дійсний до " + tokenObj.exp;
+            // TODO: перевірити на правильність декодування та дійсність
+            const appContext = getAppContext();
+            fetch(`${appContext}/tpl/spa-auth.html`)
                 .then(r => r.text()).then( t =>
                     document.querySelector('auth-part').innerHTML = t );
+
             document.getElementById("spa-log-out")
                 .addEventListener('click', logoutClick);
+
+
+            const spaPage1Button = document.getElementById("spa-page-1");
+
+            if(spaPage1Button) {
+                spaPage1Button.addEventListener('click', () => {
+                    fetch(`${appContext}/tpl/secret-page.html`)
+                        .then(r => r.text()).then(t =>
+                        document.querySelector('auth-part').innerHTML = t);
+                });
+            }
+
+            const spaPage2Button = document.getElementById("spa-page-2");
+
+            if(spaPage2Button) {
+                spaPage2Button.addEventListener('click', () => {
+                    fetch(`${appContext}/tpl/secret-page-another.html`)
+                        .then(r => r.text()).then(t =>
+                        document.querySelector('auth-part').innerHTML = t);
+                });
+            }
+
+            const notFound = document.getElementById("404");
+
+            if(notFound) {
+                notFound.addEventListener('click', () => {
+                    fetch(`${appContext}/tpl/404.html`)
+                        .then(r => r.text()).then(t =>
+                        document.querySelector('auth-part').innerHTML = t);
+                });
+            }
+        }
+        else {
+            spaTokenStatus.innerText = 'Не встановлено';
         }
     }
     const spaGetDataButton = document.getElementById("spa-get-data");
@@ -32,11 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
         spaGetDataButton.addEventListener('click', spaGetDataClick);
     }
 });
+function getAppContext() {
+
+    return '/' + window.location.pathname.split('/')[1];
+}
 function spaGetDataClick() {
     console.log('spaGetDataClick');
 }
 function logoutClick() {
-    window.localStorage.removeItem('jti');
+    window.localStorage.removeItem('token');
     window.location.reload();
 }
 function onModalOpens() {
@@ -67,24 +108,26 @@ function authSignInButtonClick() {
         authMessage.innerText = "Логін не може бути порожнім";
     }
 
-    const appContext = window.location.pathname.split('/')[1];
+    const appContext = getAppContext();
 
-    fetch(`/${appContext}/auth?login=${authLogin.value}&password=${authPassword.value}`, {
+    fetch(`${appContext}/auth?login=${authLogin.value}&password=${authPassword.value}`, {
         method: 'GET'
     }).then(r => {
         if(r.status !== 200) {
             authMessage.innerText = "Автентифікацію відхилено";
         }
         else {
-            r.json().then(j => {
-                if(typeof j.jti === 'undefined') {
+            r.text().then(base64encodedText => {
+                // console.log(base64encodedText);
+                // base64 decoding
+                const token = JSON.parse(atob(base64encodedText));
+                if(typeof token.jti === 'undefined') {
                     authMessage.innerText = "Помилка одержання токену";
                     return;
                 }
-                console.log(j);
-                window.localStorage.setItem('jti', j.jti);
-                window.localStorage.setItem('exp', j['exp']);
-                window.location = `/${appContext}/spa`;
+                window.localStorage.setItem('token', base64encodedText);
+                // window.localStorage.setItem('exp', token['exp']);
+                window.location = `${appContext}/spa`;
             });
         }
     })
