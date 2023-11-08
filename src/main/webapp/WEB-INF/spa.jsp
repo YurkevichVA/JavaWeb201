@@ -12,7 +12,7 @@
 <button class="btn green" id="spa-get-data">Дані</button>
 <button class="btn green" id="spa-log-out">Вихід</button>
 
-<button class="btn green" id="spa-page-1">Сторінка 1</button>
-<button class="btn green" id="spa-page-2">Сторінка 2</button>
+<%--<button class="btn green" id="spa-page-1">Сторінка 1</button>--%>
+<%--<button class="btn green" id="spa-page-2">Сторінка 2</button>--%>
 
-<button class="btn green" id="404">404</button>
+<%--<button class="btn green" id="404">404</button>--%>

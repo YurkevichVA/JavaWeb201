@@ -22,43 +22,49 @@ document.addEventListener("DOMContentLoaded", () => {
             spaTokenStatus.innerText = "Дійсний до " + tokenObj.exp;
             // TODO: перевірити на правильність декодування та дійсність
             const appContext = getAppContext();
-            fetch(`${appContext}/tpl/spa-auth.html`)
+            fetch(`${appContext}/tpl/spa-auth.html`, {
+                method: 'GET',
+                headers: {
+                    'Authorization' : `Bearer ${token}`
+                }
+            })
                 .then(r => r.text()).then( t =>
                     document.querySelector('auth-part').innerHTML = t );
 
             document.getElementById("spa-log-out")
                 .addEventListener('click', logoutClick);
 
-
-            const spaPage1Button = document.getElementById("spa-page-1");
-
-            if(spaPage1Button) {
-                spaPage1Button.addEventListener('click', () => {
-                    fetch(`${appContext}/tpl/secret-page.html`)
-                        .then(r => r.text()).then(t =>
-                        document.querySelector('auth-part').innerHTML = t);
-                });
-            }
-
-            const spaPage2Button = document.getElementById("spa-page-2");
-
-            if(spaPage2Button) {
-                spaPage2Button.addEventListener('click', () => {
-                    fetch(`${appContext}/tpl/secret-page-another.html`)
-                        .then(r => r.text()).then(t =>
-                        document.querySelector('auth-part').innerHTML = t);
-                });
-            }
-
-            const notFound = document.getElementById("404");
-
-            if(notFound) {
-                notFound.addEventListener('click', () => {
-                    fetch(`${appContext}/tpl/404.html`)
-                        .then(r => r.text()).then(t =>
-                        document.querySelector('auth-part').innerHTML = t);
-                });
-            }
+/* hw
+            // const spaPage1Button = document.getElementById("spa-page-1");
+            //
+            // if(spaPage1Button) {
+            //     spaPage1Button.addEventListener('click', () => {
+            //         fetch(`${appContext}/tpl/secret-page.html`)
+            //             .then(r => r.text()).then(t =>
+            //             document.querySelector('auth-part').innerHTML = t);
+            //     });
+            // }
+            //
+            // const spaPage2Button = document.getElementById("spa-page-2");
+            //
+            // if(spaPage2Button) {
+            //     spaPage2Button.addEventListener('click', () => {
+            //         fetch(`${appContext}/tpl/secret-page-another.html`)
+            //             .then(r => r.text()).then(t =>
+            //             document.querySelector('auth-part').innerHTML = t);
+            //     });
+            // }
+            //
+            // const notFound = document.getElementById("404");
+            //
+            // if(notFound) {
+            //     notFound.addEventListener('click', () => {
+            //         fetch(`${appContext}/tpl/404.html`)
+            //             .then(r => r.text()).then(t =>
+            //             document.querySelector('auth-part').innerHTML = t);
+            //     });
+            // }
+ */
         }
         else {
             spaTokenStatus.innerText = 'Не встановлено';
@@ -75,6 +81,17 @@ function getAppContext() {
 }
 function spaGetDataClick() {
     console.log('spaGetDataClick');
+    const appContext = getAppContext();
+    fetch(`${appContext}/tpl/NP.png`, {
+        method: 'GET',
+        headers: {
+            'Authorization' : `Bearer ${window.localStorage.getItem('token')}`
+        }
+    })
+        .then(r => r.blob()).then( b => {
+        const blobURL = URL.createObjectURL(b);
+        document.querySelector('auth-part').innerHTML += `<img src=${blobURL} width="100"/>`;
+    });
 }
 function logoutClick() {
     window.localStorage.removeItem('token');
