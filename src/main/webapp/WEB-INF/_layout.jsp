@@ -32,6 +32,7 @@
             <li <%= "ioc.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/ioc">IoC</a></li>
             <li <%= "db.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/db">DB</a></li>
             <li <%= "db.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/spa">SPA</a></li>
+            <li <%= "db.jsp".equals(pageBody) ? "class='active'" : "" %> ><a href="<%= context %>/ws">WS</a></li>
         </ul>
     </div>
 </nav>

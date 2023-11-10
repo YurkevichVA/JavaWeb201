@@ -76,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 function getAppContext() {
-
     return '/' + window.location.pathname.split('/')[1];
 }
 function spaGetDataClick() {
