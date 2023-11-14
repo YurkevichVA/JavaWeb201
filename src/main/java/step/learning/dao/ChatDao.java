@@ -41,7 +41,7 @@ public class ChatDao {
     }
     public boolean install() {
         String sql = "CREATE TABLE " + dbPrefix + "chat (" +
-                "user CHAR(4) PRIMARY KEY," +
+                "user BIGINT UNSIGNED," +
                 "message TEXT NOT NULL," +
                 "moment DATETIME DEFAULT CURRENT_TIMESTAMP" +
                 ") ENGINE = INNODB, DEFAULT CHARSET = utf8mb4 COLLATE utf8mb4_unicode_ci";

@@ -39,7 +39,8 @@ public class AuthTokenDao {
             System.err.println("bearer parse error " + ex.getMessage() + " " + bearer);
             return null;
         }
-        String sql = "SELECT BIN_TO_UUID(t.jti) AS jti, t.sub, t.iat, t.exp FROM " + dbPrefix + "auth_tokens t " +
+        String sql = "SELECT BIN_TO_UUID(t.jti) AS jti, t.sub, t.iat, t.exp, u.`login` AS nik FROM " + dbPrefix + "auth_tokens t " +
+                "JOIN " + dbPrefix + "users u ON u.id = t.sub " +
                 "WHERE jti = UUID_TO_BIN(?) AND t.exp > CURRENT_TIMESTAMP";
         try(PreparedStatement prep = dbProvider.getConnection().prepareStatement(sql)) {
             prep.setString(1, jti);

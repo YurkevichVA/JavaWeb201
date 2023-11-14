@@ -2,7 +2,7 @@
 <h2>Web Socket</h2>
 <div class="row">
     <div class="col s2">
-        <strong><%=request.getAttribute("user")%></strong>
+        <strong id="chat-user">Connecting...</strong>
         <input id="user-message" type="text" value="poopie"/>
         <button onclick="sendClick()">Send</button>
         <ul class="collection" id="chat-container">
@@ -34,7 +34,13 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        initWebsocket();
+        const token = window.localStorage.getItem('token');
+        if(token) {
+            initWebsocket();
+        }
+        else {
+            document.getElementById("chat-user").innerText = "Авторизуйтесь для користування чатами";
+        }
     });
     function addMessage(txt) {
         const li = document.createElement("li");
@@ -44,7 +50,10 @@
     }
     function sendClick() {
         window.websocket.send(
-            document.getElementById("user-message").value
+            JSON.stringify({
+                command:'chat',
+                data: document.getElementById("user-message").value
+            })
         )
     }
     function initWebsocket() {
@@ -57,7 +66,11 @@
     }
     function onWsOpen( e ) {
         console.log( "onWsOpen", e ) ;
-        addMessage("Chat activated");
+        const token = window.localStorage.getItem('token');
+        window.websocket.send(JSON.stringify({
+            command:'auth',
+            data: token
+        }));
     }
     function onWsClose( e ) {
         console.log( "onWsClose", e ) ;
@@ -65,7 +78,20 @@
     }
     function onWsMessage( e ) {
         console.log( "onWsMessage", e ) ;
-        addMessage(e.data);
+        const message = JSON.parse(e.data);
+        switch (message.status) {
+            case 201: addMessage(message.data); break;
+            case 202:
+                const item = JSON.parse(atob(window.localStorage.getItem('token')));
+                const json = message.data;
+                const dataObject = JSON.parse(json);
+                document.getElementById("chat-user").innerText = dataObject.data;
+                addMessage('Chat activated');
+                break;
+            case 401:
+            case 403: document.getElementById('chat-user').innerText = 'Повторіть авторизацію';
+            default: console.log(message);
+        }
     }
     function onWsError( e ) {
         console.log( "onWsError", e ) ;

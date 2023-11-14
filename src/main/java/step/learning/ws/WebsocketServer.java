@@ -1,7 +1,11 @@
 package step.learning.ws;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.inject.Inject;
+import step.learning.dao.AuthTokenDao;
 import step.learning.dao.ChatDao;
+import step.learning.dto.entities.AuthToken;
 import step.learning.dto.entities.ChatMessage;
 
 import javax.websocket.*;
@@ -22,10 +26,12 @@ public class WebsocketServer {
             ) ;
     private final ChatDao chatDao;
     private final Object synchObject = new Object();
+    private final AuthTokenDao authTokenDao;
 
     @Inject
-    public WebsocketServer(ChatDao chatDao) {
+    public WebsocketServer(ChatDao chatDao, AuthTokenDao authTokenDao) {
         this.chatDao = chatDao;
+        this.authTokenDao = authTokenDao;
     }
 
     @OnOpen
@@ -40,35 +46,76 @@ public class WebsocketServer {
     }
     @OnMessage
     public void onMessage(String message, Session session) {
-        Thread addToDbThread = new Thread(() -> {
-            ChatMessage chatMessage = new ChatMessage();
-            chatMessage.setUser((String) session.getUserProperties().get("user"));
-            chatMessage.setMessage(message);
+        JsonObject jsonObject =
+            JsonParser.parseString(message).getAsJsonObject();
+        String command = jsonObject.get("command").getAsString();
+        String data = jsonObject.get("data").getAsString();
+        JsonObject respObject = new JsonObject();
+        switch (command) {
+            case "auth" :
+                AuthToken authToken = authTokenDao.getTokenByBearer(data);
+                if (authToken == null) {
+                    sendToSession(session, 403, "token rejected");
+                    try {
+                        session.close();
+                    } catch (IOException e) {
+                        System.err.println(e.getMessage());
+                    }
+                } else {
+                    session.getUserProperties().put("auth", authToken.getSub());
+                    session.getUserProperties().put("nik", authToken.getNik());
+                    respObject.addProperty("statusMessage", "Accepted");
+                    respObject.addProperty("data", authToken.getNik());
+                    sendToSession(session, 202, respObject.toString());
+                }
+                break;
+            case "chat" :
+                String sub = (String) session.getUserProperties().get("auth");
+                String nik = (String) session.getUserProperties().get("nik");
+                if(sub == null) {
+                    sendToSession(session, 401, "Auth required");
+                }
+                else {
+                    Thread addToDbThread = new Thread(() -> {
+                        ChatMessage chatMessage = new ChatMessage();
+                        chatMessage.setUser(sub);
+                        chatMessage.setMessage(data);
 
-            synchronized (synchObject) {
-                chatDao.add(chatMessage);
-            }
+                        synchronized (synchObject) {
+                            chatDao.add(chatMessage);
+                        }
 
-            sendToAll(chatMessage.getUser() + ": " + chatMessage.getMessage());
-        });
-        addToDbThread.start();
-        try {
-            addToDbThread.join();
-        } catch (InterruptedException e) {
-            System.err.println(e.getMessage());
+                        sendToAll(201, nik + ": " + data);
+                    });
+                    addToDbThread.start();
+                    try {
+                        addToDbThread.join();
+                    } catch (InterruptedException e) {
+                        System.err.println(e.getMessage());
+                    }
+                }
+                break;
+            default:
+                sendToSession(session, 405, "Command unrecognized");
         }
     }
     @OnError
     public void onError(Throwable ex, Session session) {
         System.err.println("onError " + ex.getMessage());
     }
-    private void sendToAll(String message) {
+    private void sendToSession(Session session, int status, String data) {
+        JsonObject respObject = new JsonObject();
+        respObject.addProperty("status", status);
+        respObject.addProperty("data", data);
+        try {
+            session.getBasicRemote().sendText(respObject.toString());
+        } catch (IOException ex) {
+            System.err.println("sendToSession " + ex.getMessage());
+        }
+    }
+    private void sendToAll(int status, String data) {
         for(Session session: sessions) {
-            try {
-                session.getBasicRemote().sendText(message);
-            } catch (IOException ex) {
-                System.err.println("sendToAll " + ex.getMessage());
-            }
+            sendToSession(session, status, data);
         }
     }
 }
