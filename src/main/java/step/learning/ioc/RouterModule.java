@@ -1,6 +1,5 @@
 package step.learning.ioc;
 
-import com.google.inject.Guice;
 import com.google.inject.servlet.ServletModule;
 import step.learning.filters.CharsetFilter;
 import step.learning.servlets.*;
