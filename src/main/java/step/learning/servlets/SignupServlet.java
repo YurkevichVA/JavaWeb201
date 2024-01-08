@@ -28,14 +28,14 @@ public class SignupServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // перевіряємо чи є повідомлення у сесії
+        // перевіряємо наявність повідомлення у сесії
         HttpSession session = req.getSession();
         Integer regStatus = (Integer) session.getAttribute("reg-status");
-        if(regStatus != null) { // є повідомлення
-            // видаляємо його з сесії
-            session.removeAttribute("reg-status");
-            // та передаємо дані у атрибути запиту
-            String message ;
+
+        if(regStatus != null) { // повідомлення є
+            session.removeAttribute("reg-status"); // видаляємо повідомлення з сесії та передаємо дані в атрибути запиту
+            String message;
+
             if(regStatus == 0) {
                 message = "Помилка оброблення даних форми";
             }
@@ -49,7 +49,7 @@ public class SignupServlet extends HttpServlet {
             }
             req.setAttribute("reg-message", message);
         }
-        // resp.getWriter().print("HomeServlet");
+
         req.setAttribute("page-body", "signup.jsp");
         req.getRequestDispatcher("WEB-INF/_layout.jsp").forward(req, resp);
     }
@@ -62,31 +62,27 @@ public class SignupServlet extends HttpServlet {
         try {
             model = new RegFormModel(formParseResult);
         } catch (ParseException e) {
-            // throw new RuntimeException(e);
+            e.printStackTrace();
             model = null;
         }
 
         HttpSession session = req.getSession();
 
         // Зберігаємо необхідні дані у сесії та повертаємо на ГЕТ шляхом відповіді-редиректу
-        if(model == null) {
-            // стан помилки розбору форм
-            session.setAttribute("reg-status", 0);
+        if( model == null ) { // стан помилки розбору форми
+            session.setAttribute("reg-status", 0 );
         }
-        else if(!model.getErrorMessages().isEmpty()) {
-            // стан помилки валідації - зберігаємо саму модель
-            // для відновлення даних на формі введення
+        else if( ! model.getErrorMessages().isEmpty() ) {
+            // стан помилки валідації - зберігаємо саму модель для відновлення даних на формі введення
             session.setAttribute("reg-model", model);
             session.setAttribute("reg-status", 1);
         }
         else {
             // стан успішної обробки моделі - передаємо лише повідомлення
-            if(userDao.addFromForm(model)) {
+            if( userDao.addFromForm( model ) ) {
                 session.setAttribute("reg-status", 2);
             }
-
         }
-        //
         resp.sendRedirect(req.getRequestURI());
     }
 }

@@ -9,6 +9,7 @@ import step.learning.dao.UserDao;
 import step.learning.dto.entities.AuthToken;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,8 +20,7 @@ import java.util.Base64;
 public class AuthServlet extends HttpServlet {
     private final Gson gson = new GsonBuilder().serializeNulls().create();
     private final AuthTokenDao authTokenDao;
-    private final UserDao userDao
-            ;
+    private final UserDao userDao;
 
     @Inject
     public AuthServlet(AuthTokenDao authTokenDao, UserDao userDao) {
@@ -29,31 +29,27 @@ public class AuthServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if(userDao.install()) {
-            sendResponse(resp, 201, "Created");
-        }
-        else {
-            sendResponse(resp, 500, "Error, see server logs");
-        }
-    }
-
-    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String login = req.getParameter("login");
         String password = req.getParameter("password");
-        if(login == null || login.isEmpty()
-            || password == null /* || password.isEmpty() */ ) {
+
+        if(login == null || login.isEmpty() || password == null ) {
             sendResponse(resp, 400, "Missing required parametrs: login and/or password");
             return;
         }
+
         AuthToken authToken = authTokenDao.getTokenByCredentials(login, password);
         if( authToken == null ) {
             sendResponse(resp, 401, "Auth rejected for given login and/or password");
             return;
         }
+
+
         String json = gson.toJson(authToken);
         String base64code = Base64.getUrlEncoder().encodeToString(json.getBytes());
+        Cookie cookie = new Cookie("authToken", base64code);
+        cookie.setMaxAge(3600); // Set the cookie expiration time in seconds
+        resp.addCookie(cookie);
         resp.setContentType("text/plain");
         resp.getWriter().print(base64code);
     }

@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class RegFormModel {
+
     // region fields
     private String name;
     private String login;
@@ -23,79 +24,6 @@ public class RegFormModel {
     private String avatar; // filename for avatar
     // endregion
 
-
-    /*public RegFormModel( HttpServletRequest request ) throws ParseException {
-        this.setName(request.getParameter("reg-name"));
-        this.setLogin(request.getParameter("reg-login"));
-        this.setPassword(request.getParameter("reg-password"));
-        this.setRepeat(request.getParameter("reg-repeat"));
-        this.setEmail(request.getParameter("reg-email"));
-        this.setIsAgree(request.getParameter("reg-rules"));
-        this.setBirthdate(request.getParameter("reg-birthdate"));
-
-    }*/
-
-    public RegFormModel(FormParseResult result) throws ParseException {
-        Map<String,String> fields = result.getFields();
-        this.setName(fields.get("reg-name"));
-        this.setLogin(fields.get("reg-login"));
-        this.setPassword(fields.get("reg-password"));
-        this.setRepeat(fields.get("reg-repeat"));
-        this.setEmail(fields.get("reg-email"));
-        this.setIsAgree(fields.get("reg-rules"));
-        this.setBirthdate(fields.get("reg-birthdate"));
-        this.setAvatar(result);
-    }
-
-    public Map<String, String > getErrorMessages() {
-        Map<String, String> result = new HashMap<>() ;
-
-        if(login == null || "".equals(login)) {
-            result.put("login", "Логін не може бути порожнім");
-        } else if (! Pattern.matches("^[a-zA-Z0-9]+$", login)) {
-            result.put("login", "Логін не відповідає шаблону");
-        }
-
-        if(name == null || "".equals(name)) {
-            result.put("name", "Ім'я не може бути порожнім");
-        }
-
-        Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
-
-        if(!pattern.matcher(email).matches()) {
-            result.put("email", "Некоректна адреса електронної пошти");
-        }
-
-        Date current = new Date();
-
-        if(birthdate == null) {
-            result.put("birthdate", "Треба ввести дату народження");
-        }
-        else if(birthdate.compareTo( current ) > 0 ) {
-            result.put("birthdate", "Вітаємо, мандрівнику у часі! Як там третя світова?");
-        }
-
-        if(password == null || "".equals(password)) {
-            result.put("password", "Пароль не може бути порожнім");
-        }
-        else if(password.length() < 3) {
-            result.put("password", "Пароль повинен бути більше трьох символів");
-        }
-
-        if(repeat == null || "".equals(repeat)) {
-            result.put("repeat", "Необхідно повторити пароль");
-        }
-        else if(!password.equals(repeat)) {
-            result.put("repeat", "Паролі не співпадають");
-        }
-
-        if(!isAgree) {
-            result.put("rules", "Треба погодитись шоб нічо не порушувати");
-        }
-
-        return result;
-    }
-
     // region accessors
     private void setAvatar(FormParseResult result) throws ParseException {
         Map<String, FileItem> files = result.getFiles();
@@ -106,8 +34,8 @@ public class RegFormModel {
         FileItem item = files.get("reg-avatar");
         // директорія завантаження файлів (./ - це директорія сервера (Tomcat))
         String targetDir = result.getRequest()
-                            .getServletContext() // контекст - "оточення" сервелету, з якого дізнаємось файлові шляхи
-                            .getRealPath("./upload/avatar/");
+                .getServletContext() // контекст - "оточення" сервелету, з якого дізнаємось файлові шляхи
+                .getRealPath("./upload/avatar/");
         String submittedFilename = item.getName();
         // Визначити тип файлу (розширення) та перевірити на перелік дозволених
         String ext = submittedFilename.substring(submittedFilename.lastIndexOf('.'));
@@ -214,6 +142,66 @@ public class RegFormModel {
         isAgree = agree;
     }
     // endregion
+
+    public RegFormModel(FormParseResult result) throws ParseException {
+        Map<String,String> fields = result.getFields();
+        this.setName      ( fields.get( "reg-name"      ) );
+        this.setLogin     ( fields.get( "reg-login"     ) );
+        this.setPassword  ( fields.get( "reg-password"  ) );
+        this.setRepeat    ( fields.get( "reg-repeat"    ) );
+        this.setEmail     ( fields.get( "reg-email"     ) );
+        this.setIsAgree   ( fields.get( "reg-rules"     ) );
+        this.setBirthdate ( fields.get( "reg-birthdate" ) );
+        this.setAvatar    ( result );
+    }
+
+    public Map<String, String > getErrorMessages() {
+
+        Map<String, String> result = new HashMap<>() ;
+
+        if(login == null || "".equals(login)) {
+            result.put("login", "Логін не може бути порожнім");
+        }
+
+        if(name == null || "".equals(name)) {
+            result.put("name", "Ім'я не може бути порожнім");
+        }
+
+        Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+
+        if(!pattern.matcher(email).matches()) {
+            result.put("email", "Некоректна адреса електронної пошти");
+        }
+
+        Date current = new Date();
+
+        if(birthdate == null) {
+            result.put("birthdate", "Треба ввести дату народження");
+        }
+        else if(birthdate.compareTo( current ) > 0 ) {
+            result.put("birthdate", "Вітаємо, мандрівнику у часі! Як там третя світова?");
+        }
+
+        if(password == null || "".equals(password)) {
+            result.put("password", "Пароль не може бути порожнім");
+        }
+        else if(password.length() < 3) {
+            result.put("password", "Пароль повинен бути більше трьох символів");
+        }
+
+        if(repeat == null || "".equals(repeat)) {
+            result.put("repeat", "Необхідно повторити пароль");
+        }
+        else if(!password.equals(repeat)) {
+            result.put("repeat", "Паролі не співпадають");
+        }
+
+        if(!isAgree) {
+            result.put("rules", "Треба погодитись шоб нічо не порушувати");
+        }
+
+        return result;
+    }
 
     private static final SimpleDateFormat formDate = new SimpleDateFormat("yyyy-MM-dd");
 }

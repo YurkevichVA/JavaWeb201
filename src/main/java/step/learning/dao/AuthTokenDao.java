@@ -119,7 +119,7 @@ public class AuthTokenDao {
         return null;
     }
     public boolean install() {
-        String sql = "CREATE TABLE " + dbPrefix + "auth_tokens (" +
+        String sql = "CREATE TABLE IF NOT EXISTS " + dbPrefix + "auth_tokens (" +
                 "jti BINARY(16) PRIMARY KEY DEFAULT ( UUID_TO_BIN( UUID() ) )," +
                 "sub BIGINT UNSIGNED NOT NULL COMMENT 'user-id'," +
                 "exp DATETIME NOT NULL," +

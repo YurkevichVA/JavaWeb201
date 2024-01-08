@@ -6,3 +6,17 @@
 .auth-icon {
     margin-right: 0.5em;
 }
+
+body {
+    background-color: #d7ccc8;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}

@@ -7,7 +7,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -15,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Form parse service for both form enctypes:
@@ -26,8 +27,10 @@ public class MixedFormParseService implements FormParseService {
     private static final int MAX_FILE_SIZE = 20 * 1024 * 1024 ;
     private static final int MAX_FORM_SIZE = 40 * 1024 * 1024 ;
     private final ServletFileUpload fileUpload ;
+    private final Logger logger;
     @Inject
-    public  MixedFormParseService() {
+    public  MixedFormParseService(Logger logger) {
+        this.logger = logger;
         // Початкові налаштування для запобігання вразливості переповнення диска
         DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
         // Максимальний розмір файлу, що залишається у пам'яті
@@ -64,7 +67,7 @@ public class MixedFormParseService implements FormParseService {
                     }
                 }
             } catch (FileUploadException | UnsupportedEncodingException e) {
-                throw new RuntimeException(e); // TODO: replace by logger
+                logger.log(Level.WARNING,e.getMessage());
             }
         }
         else { // urlencoded
